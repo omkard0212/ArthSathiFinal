@@ -1,295 +1,193 @@
 {
-  "version": "2.0",
+  "version": "3.0",
   "questions": [
-    {
-      "id": "preferred_language",
-      "type": "lang_select",
-      "icon": "🌐",
-      "required": true,
-      "informs": ["preferred_language"]
-    },
-    {
-      "id": "interaction_mode",
-      "type": "mode_select",
-      "icon": "🎤",
-      "required": true,
-      "informs": ["interaction_mode"]
-    },
-    {
-      "id": "state",
-      "type": "state_select",
-      "icon": "📍",
-      "required": true,
-      "informs": ["state"],
-      "information_gain_weight": 0.95
-    },
-    {
-      "id": "district",
-      "type": "text",
-      "icon": "🏘️",
-      "required": false,
-      "informs": ["district"],
-      "information_gain_weight": 0.5
-    },
-    {
-      "id": "age",
-      "type": "number",
-      "icon": "🎂",
-      "required": true,
-      "min": 1,
-      "max": 100,
-      "informs": ["age"],
-      "information_gain_weight": 0.9
-    },
-    {
-      "id": "gender",
-      "type": "choice",
-      "icon": "👤",
-      "required": false,
-      "informs": ["gender"],
-      "information_gain_weight": 0.75,
+    { "id": "preferred_language", "type": "lang_select",   "icon": "🌐", "required": true, "informs": ["preferred_language"] },
+    { "id": "interaction_mode",   "type": "mode_select",   "icon": "🎤", "required": true, "informs": ["interaction_mode"] },
+    { "id": "state",              "type": "state_select",  "icon": "📍", "required": true, "informs": ["state"] },
+    { "id": "district",           "type": "text",          "icon": "🏘️", "required": false, "informs": ["district"] },
+
+    { "id": "age",    "type": "number",  "icon": "🎂", "required": true,  "informs": ["age"] },
+    { "id": "gender", "type": "choice",  "icon": "👤", "required": true,  "informs": ["gender"],
       "options": [
-        { "value": "male",              "icon": "👨" },
-        { "value": "female",            "icon": "👩" },
-        { "value": "transgender",       "icon": "🏳️‍⚧️" },
-        { "value": "prefer_not_to_say", "icon": "🔒" }
+        {"value":"male","icon":"👨"}, {"value":"female","icon":"👩"},
+        {"value":"transgender","icon":"🏳️‍⚧️"}, {"value":"prefer_not_to_say","icon":"🔒"}
       ]
     },
-    {
-      "id": "caste_category",
-      "type": "choice",
-      "icon": "📋",
-      "required": false,
-      "informs": ["caste_category"],
-      "information_gain_weight": 0.85,
+
+    { "id": "marital_status", "type": "choice", "icon": "💍", "required": false, "informs": ["marital_status"],
       "options": [
-        { "value": "general", "icon": "⭕" },
-        { "value": "obc",     "icon": "🟡" },
-        { "value": "sc",      "icon": "🔵" },
-        { "value": "st",      "icon": "🟢" },
-        { "value": "ews",     "icon": "🟠" },
-        { "value": "nt",      "icon": "🟣" },
-        { "value": "other",   "icon": "⚪" }
+        {"value":"single","icon":"🙋"}, {"value":"married","icon":"💑"},
+        {"value":"widowed","icon":"💙"}, {"value":"divorced","icon":"📋"},
+        {"value":"separated","icon":"🚪"}
       ]
     },
-    {
-      "id": "occupation",
-      "type": "choice_grid",
-      "icon": "💼",
-      "required": true,
-      "informs": ["occupation"],
-      "information_gain_weight": 0.9,
+
+    { "id": "is_widow", "type": "yesno", "icon": "💙", "required": false,
+      "depends_on": {"marital_status": "widowed"}, "informs": ["is_widow"] },
+
+    { "id": "caste_category", "type": "choice", "icon": "📋", "required": true, "informs": ["caste_category"],
       "options": [
-        { "value": "farmer",              "icon": "🌾" },
-        { "value": "marginal_farmer",     "icon": "🌱" },
-        { "value": "farm_laborer",        "icon": "🚜" },
-        { "value": "fisherman",           "icon": "🎣" },
-        { "value": "weaver",              "icon": "🧵" },
-        { "value": "artisan",             "icon": "🔨" },
-        { "value": "self_employed",       "icon": "🛒" },
-        { "value": "street_vendor",       "icon": "🛍️" },
-        { "value": "daily_wage",          "icon": "👷" },
-        { "value": "construction_worker", "icon": "🧱" },
-        { "value": "domestic_worker",     "icon": "🏠" },
-        { "value": "small_trader",        "icon": "🏪" },
-        { "value": "student",             "icon": "📚" },
-        { "value": "homemaker",           "icon": "👪" },
-        { "value": "unemployed",          "icon": "🔍" },
-        { "value": "other",               "icon": "💼" }
+        {"value":"general","icon":"⭕"}, {"value":"obc","icon":"🟡"},
+        {"value":"sc","icon":"🔵"}, {"value":"st","icon":"🟢"},
+        {"value":"ews","icon":"🟠"}, {"value":"nt","icon":"🟣"}, {"value":"other","icon":"⚪"}
       ]
     },
-    {
-      "id": "monthly_income",
-      "type": "income_band",
-      "icon": "💰",
-      "required": true,
-      "informs": ["monthly_income", "annual_income"],
-      "information_gain_weight": 0.95,
+
+    { "id": "religion", "type": "choice", "icon": "🕊️", "required": false, "informs": ["religion"],
       "options": [
-        { "value": "0",     "label_key": "income.none",     "icon": "0️⃣" },
-        { "value": "2000",  "label_key": "income.under2k",  "icon": "1️⃣" },
-        { "value": "5000",  "label_key": "income.2to5k",    "icon": "2️⃣" },
-        { "value": "8000",  "label_key": "income.5to8k",    "icon": "3️⃣" },
-        { "value": "12000", "label_key": "income.8to12k",   "icon": "4️⃣" },
-        { "value": "20000", "label_key": "income.12to20k",  "icon": "5️⃣" },
-        { "value": "30000", "label_key": "income.above20k", "icon": "6️⃣" }
+        {"value":"hindu","icon":"🔱"}, {"value":"muslim","icon":"☪️"},
+        {"value":"christian","icon":"✝️"}, {"value":"sikh","icon":"☬"},
+        {"value":"buddhist","icon":"☸️"}, {"value":"jain","icon":"🟤"},
+        {"value":"parsi","icon":"🔥"}, {"value":"other","icon":"🌏"},
+        {"value":"prefer_not_to_say","icon":"🔒"}
       ]
     },
-    {
-      "id": "ration_card_type",
-      "type": "ration_card",
-      "icon": "🪪",
-      "required": false,
-      "informs": ["ration_card_type", "is_bpl"],
-      "information_gain_weight": 0.85,
+
+    { "id": "occupation", "type": "choice_grid", "icon": "💼", "required": true, "informs": ["occupation"],
       "options": [
-        { "value": "aay",         "color": "#FFD700", "icon": "🟡" },
-        { "value": "phh",         "color": "#FF6B6B", "icon": "🔴" },
-        { "value": "nphh",        "color": "#90EE90", "icon": "🟢" },
-        { "value": "annapurna",   "color": "#87CEEB", "icon": "🔵" },
-        { "value": "state_other", "color": "#DDA0DD", "icon": "🟣" },
-        { "value": "none",        "color": "#D3D3D3", "icon": "⚪" },
-        { "value": "applied",     "color": "#FFA500", "icon": "🟠" }
+        {"value":"farmer","icon":"🌾"}, {"value":"marginal_farmer","icon":"🌱"},
+        {"value":"farm_laborer","icon":"🚜"}, {"value":"fisherman","icon":"🎣"},
+        {"value":"weaver","icon":"🧵"}, {"value":"artisan","icon":"🔨"},
+        {"value":"self_employed","icon":"🛒"}, {"value":"street_vendor","icon":"🛍️"},
+        {"value":"daily_wage","icon":"👷"}, {"value":"construction_worker","icon":"🧱"},
+        {"value":"domestic_worker","icon":"🏠"}, {"value":"small_trader","icon":"🏪"},
+        {"value":"student","icon":"📚"}, {"value":"homemaker","icon":"👪"},
+        {"value":"unemployed","icon":"🔍"}, {"value":"other","icon":"💼"}
       ]
     },
-    {
-      "id": "has_bank_account",
-      "type": "yesno",
-      "icon": "🏦",
-      "required": false,
-      "informs": ["has_bank_account"],
-      "information_gain_weight": 0.7
-    },
-    {
-      "id": "has_jan_dhan_account",
-      "type": "yesno",
-      "icon": "🏦",
-      "required": false,
-      "depends_on": { "has_bank_account": true },
-      "informs": ["has_jan_dhan_account"],
-      "information_gain_weight": 0.5
-    },
-    {
-      "id": "has_aadhaar",
-      "type": "yesno",
-      "icon": "🪪",
-      "required": false,
-      "informs": ["has_aadhaar"],
-      "information_gain_weight": 0.6
-    },
-    {
-      "id": "land_holding_acres",
-      "type": "number",
-      "icon": "🌾",
-      "required": false,
-      "informs": ["land_holding_acres"],
-      "depends_on": { "occupation": ["farmer", "marginal_farmer"] },
-      "information_gain_weight": 0.7
-    },
-    {
-      "id": "has_disability",
-      "type": "yesno",
-      "icon": "♿",
-      "required": false,
-      "informs": ["has_disability"],
-      "information_gain_weight": 0.5
-    },
-    {
-      "id": "disability_type",
-      "type": "choice",
-      "icon": "🩺",
-      "required": false,
-      "depends_on": { "has_disability": true },
-      "informs": ["disability_type", "disability_percentage"],
-      "information_gain_weight": 0.6,
+
+    { "id": "land_holding_acres", "type": "number", "icon": "🌾", "required": false,
+      "depends_on": {"occupation": ["farmer","marginal_farmer"]}, "informs": ["land_holding_acres"] },
+
+    { "id": "has_kisan_credit_card", "type": "yesno", "icon": "💳", "required": false,
+      "depends_on": {"occupation": ["farmer","marginal_farmer"]}, "informs": ["has_kisan_credit_card"] },
+
+    { "id": "sub_occupation", "type": "text", "icon": "🔧", "required": false,
+      "depends_on": {"occupation": ["artisan","weaver","self_employed","small_trader"]},
+      "informs": ["sub_occupation"] },
+
+    { "id": "monthly_income", "type": "income_band", "icon": "💰", "required": true,
+      "informs": ["monthly_income","annual_income"],
       "options": [
-        { "value": "visual",        "icon": "👁️" },
-        { "value": "hearing",       "icon": "👂" },
-        { "value": "locomotor",     "icon": "🦽" },
-        { "value": "mental_illness","icon": "🧠" },
-        { "value": "intellectual",  "icon": "📖" },
-        { "value": "multiple",      "icon": "➕" },
-        { "value": "other",         "icon": "❓" }
+        {"value":"0","icon":"0️⃣"}, {"value":"1000","icon":"1️⃣"},
+        {"value":"2500","icon":"2️⃣"}, {"value":"5000","icon":"3️⃣"},
+        {"value":"8000","icon":"4️⃣"}, {"value":"12000","icon":"5️⃣"},
+        {"value":"20000","icon":"6️⃣"}, {"value":"35000","icon":"7️⃣"}
       ]
     },
-    {
-      "id": "is_widow",
-      "type": "yesno",
-      "icon": "💙",
-      "required": false,
-      "depends_on": { "gender": "female" },
-      "informs": ["is_widow"],
-      "information_gain_weight": 0.5
-    },
-    {
-      "id": "has_girl_child",
-      "type": "yesno",
-      "icon": "👧",
-      "required": false,
-      "depends_on": { "gender": "female" },
-      "informs": ["has_girl_child"],
-      "information_gain_weight": 0.5
-    },
-    {
-      "id": "is_student",
-      "type": "yesno",
-      "icon": "📚",
-      "required": false,
-      "depends_on": { "occupation": "student", "age_max": 30 },
-      "informs": ["is_student"],
-      "information_gain_weight": 0.6
-    },
-    {
-      "id": "education_level",
-      "type": "choice",
-      "icon": "🎓",
-      "required": false,
-      "depends_on": { "is_student": true, "occupation": "student" },
-      "informs": ["education_level"],
-      "information_gain_weight": 0.5,
+
+    { "id": "family_monthly_income", "type": "income_band", "icon": "👨‍👩‍👧‍👦", "required": false,
+      "informs": ["family_monthly_income","family_annual_income"],
       "options": [
-        { "value": "primary",          "icon": "🔢" },
-        { "value": "middle",           "icon": "📖" },
-        { "value": "matriculation",    "icon": "📗" },
-        { "value": "higher_secondary", "icon": "📘" },
-        { "value": "graduate",         "icon": "🎓" },
-        { "value": "postgraduate",     "icon": "🏅" }
+        {"value":"0","icon":"0️⃣"}, {"value":"3000","icon":"1️⃣"},
+        {"value":"8000","icon":"2️⃣"}, {"value":"15000","icon":"3️⃣"},
+        {"value":"25000","icon":"4️⃣"}, {"value":"50000","icon":"5️⃣"},
+        {"value":"100000","icon":"6️⃣"}
       ]
     },
-    {
-      "id": "num_dependents",
-      "type": "number",
-      "icon": "👨‍👩‍👧‍👦",
-      "required": false,
-      "min": 0,
-      "max": 15,
-      "informs": ["num_dependents"],
-      "information_gain_weight": 0.5
-    },
-    {
-      "id": "financial_goal",
-      "type": "goal_select",
-      "icon": "🎯",
-      "required": true,
-      "informs": ["financial_goal"],
-      "information_gain_weight": 0.95,
+
+    { "id": "num_dependents", "type": "number", "icon": "👨‍👩‍👧", "required": false, "min": 0, "max": 15, "informs": ["num_dependents"] },
+
+    { "id": "ration_card_type", "type": "ration_card", "icon": "🪪", "required": true,
+      "informs": ["ration_card_type","is_bpl"],
       "options": [
-        { "value": "farming",    "icon": "🌾" },
-        { "value": "housing",    "icon": "🏠" },
-        { "value": "health",     "icon": "🏥" },
-        { "value": "education",  "icon": "📚" },
-        { "value": "employment", "icon": "💼" },
-        { "value": "insurance",  "icon": "🛡️" },
-        { "value": "pension",    "icon": "👴" },
-        { "value": "business",   "icon": "🏪" },
-        { "value": "daughter",   "icon": "👧" },
-        { "value": "loan",       "icon": "💳" },
-        { "value": "savings",    "icon": "💰" },
-        { "value": "other",      "icon": "⭐" }
+        {"value":"aay","color":"#FFD700","icon":"🟡"},
+        {"value":"phh","color":"#FF6B6B","icon":"🔴"},
+        {"value":"nphh","color":"#90EE90","icon":"🟢"},
+        {"value":"annapurna","color":"#87CEEB","icon":"🔵"},
+        {"value":"state_other","color":"#DDA0DD","icon":"🟣"},
+        {"value":"none","color":"#D3D3D3","icon":"⚪"},
+        {"value":"applied","color":"#FFA500","icon":"🟠"}
       ]
     },
-    {
-      "id": "goal_amount",
-      "type": "number",
-      "icon": "💵",
-      "required": false,
-      "informs": ["goal_amount"],
-      "information_gain_weight": 0.6
-    },
-    {
-      "id": "urgency_level",
-      "type": "urgency_scale",
-      "icon": "⚡",
-      "required": true,
-      "informs": ["urgency_level"],
-      "information_gain_weight": 0.8,
+
+    { "id": "has_bank_account",     "type": "yesno", "icon": "🏦", "required": true,  "informs": ["has_bank_account"] },
+    { "id": "has_jan_dhan_account", "type": "yesno", "icon": "🏦", "required": false,
+      "depends_on": {"has_bank_account": true}, "informs": ["has_jan_dhan_account"] },
+    { "id": "has_aadhaar",          "type": "yesno", "icon": "🪪", "required": true,   "informs": ["has_aadhaar"] },
+
+    { "id": "has_disability", "type": "yesno", "icon": "♿", "required": true, "informs": ["has_disability"] },
+    { "id": "disability_type", "type": "choice", "icon": "🩺", "required": false,
+      "depends_on": {"has_disability": true}, "informs": ["disability_type","disability_percentage"],
       "options": [
-        { "value": 1, "icon": "😌", "color": "#4CAF50" },
-        { "value": 2, "icon": "🙁", "color": "#8BC34A" },
-        { "value": 3, "icon": "😟", "color": "#FFC107" },
-        { "value": 4, "icon": "😰", "color": "#FF9800" },
-        { "value": 5, "icon": "🚨", "color": "#F44336" }
+        {"value":"visual","icon":"👁️"}, {"value":"hearing","icon":"👂"},
+        {"value":"locomotor","icon":"🦽"}, {"value":"mental_illness","icon":"🧠"},
+        {"value":"intellectual","icon":"📖"}, {"value":"multiple","icon":"➕"}, {"value":"other","icon":"❓"}
       ]
-    }
+    },
+    { "id": "disability_percentage", "type": "number", "icon": "📊", "required": false,
+      "depends_on": {"has_disability": true}, "min": 0, "max": 100, "informs": ["disability_percentage"] },
+    { "id": "has_disability_certificate", "type": "yesno", "icon": "📄", "required": false,
+      "depends_on": {"has_disability": true}, "informs": ["has_disability_certificate"] },
+
+    { "id": "has_girl_child",   "type": "yesno", "icon": "👧", "required": false, "informs": ["has_girl_child"],
+      "depends_on": {"gender": "female"} },
+    { "id": "num_girl_children","type": "number","icon": "👧", "required": false, "min": 0, "max": 10,
+      "depends_on": {"has_girl_child": true}, "informs": ["num_girl_children"] },
+
+    { "id": "is_student",      "type": "yesno",  "icon": "📚", "required": false, "informs": ["is_student"],
+      "depends_on": {"age_max": 35} },
+    { "id": "education_level", "type": "choice", "icon": "🎓", "required": false,
+      "depends_on": {"is_student": true, "occupation": "student"}, "informs": ["education_level"],
+      "options": [
+        {"value":"illiterate","icon":"📝"}, {"value":"primary","icon":"🔢"},
+        {"value":"middle","icon":"📖"}, {"value":"matriculation","icon":"📗"},
+        {"value":"higher_secondary","icon":"📘"}, {"value":"graduate","icon":"🎓"},
+        {"value":"postgraduate","icon":"🏅"}, {"value":"professional","icon":"⚕️"}
+      ]
+    },
+    { "id": "student_class_level", "type": "text", "icon": "🏫", "required": false,
+      "depends_on": {"is_student": true}, "informs": ["student_class_level"] },
+
+    { "id": "is_senior_citizen", "type": "yesno", "icon": "👴", "required": false,
+      "depends_on": {"age_min": 55}, "informs": ["is_senior_citizen"] },
+
+    { "id": "residence_type", "type": "choice", "icon": "🏘️", "required": true, "informs": ["residence_type"],
+      "options": [
+        {"value":"rural","icon":"🌾"}, {"value":"semi_urban","icon":"🏘️"}, {"value":"urban","icon":"🏙️"}
+      ]
+    },
+
+    { "id": "financial_goal", "type": "goal_select", "icon": "🎯", "required": true, "informs": ["financial_goal"],
+      "options": [
+        {"value":"farming","icon":"🌾"}, {"value":"housing","icon":"🏠"},
+        {"value":"health","icon":"🏥"}, {"value":"education","icon":"📚"},
+        {"value":"employment","icon":"💼"}, {"value":"insurance","icon":"🛡️"},
+        {"value":"pension","icon":"👴"}, {"value":"business","icon":"🏪"},
+        {"value":"daughter","icon":"👧"}, {"value":"loan","icon":"💳"},
+        {"value":"savings","icon":"💰"}, {"value":"disability_support","icon":"♿"},
+        {"value":"water_sanitation","icon":"💧"}, {"value":"skill_training","icon":"🔧"},
+        {"value":"other","icon":"⭐"}
+      ]
+    },
+
+    { "id": "goal_description", "type": "text", "icon": "✍️", "required": false, "informs": ["goal_description"] },
+
+    { "id": "goal_amount", "type": "number", "icon": "💵", "required": false, "informs": ["goal_amount"] },
+
+    { "id": "goal_timeframe_months", "type": "choice", "icon": "📅", "required": false,
+      "informs": ["goal_timeframe_months"],
+      "options": [
+        {"value":"1","icon":"⚡"}, {"value":"3","icon":"📅"},
+        {"value":"6","icon":"🗓️"}, {"value":"12","icon":"📆"},
+        {"value":"24","icon":"🗓️"}, {"value":"60","icon":"🏁"}
+      ]
+    },
+
+    { "id": "urgency_level", "type": "urgency_scale", "icon": "⚡", "required": true, "informs": ["urgency_level"],
+      "options": [
+        {"value":1,"icon":"😌","color":"#4CAF50"},
+        {"value":2,"icon":"🙁","color":"#8BC34A"},
+        {"value":3,"icon":"😟","color":"#FFC107"},
+        {"value":4,"icon":"😰","color":"#FF9800"},
+        {"value":5,"icon":"🚨","color":"#F44336"}
+      ]
+    },
+
+    { "id": "total_debts", "type": "number", "icon": "💸", "required": false, "informs": ["total_debts"],
+      "depends_on": {"financial_goal": ["loan","business","farming","housing"]} },
+
+    { "id": "is_minority", "type": "yesno", "icon": "🌍", "required": false, "informs": ["is_minority"],
+      "depends_on": {"religion": ["muslim","christian","sikh","buddhist","jain","parsi"]} }
   ]
 }

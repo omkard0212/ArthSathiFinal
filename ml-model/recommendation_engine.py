@@ -1,4 +1,4 @@
-"""
+﻿"""
 ArthSathi — Full Recommendation Engine (Python)
 ================================================
 
@@ -295,59 +295,114 @@ def evaluate_eligibility(profile: dict, scheme: dict) -> tuple[EligibilityResult
 
 def f1_goal_relevance(profile: dict, scheme: dict) -> float:
     """
-    Feature 1: How well does the scheme's category/tags match the user's goal?
-
-    Uses keyword overlap between user's goal description and scheme's tags,
-    category, and name. Augmented with direct category matching.
+    Feature 1: Goal relevance using ALL profile fields for maximum accuracy.
+    Uses: financial_goal, goal_description, occupation, caste, gender,
+    disability, widow, student, minority, sub_occupation, residence.
     """
-    goal = (profile.get("financial_goal") or "").lower()
-    desc = (profile.get("goal_description") or "").lower()
-    user_text = goal + " " + desc
+    goal    = (profile.get("financial_goal") or "").lower()
+    desc    = (profile.get("goal_description") or "").lower()
+    occ     = (profile.get("occupation") or "").lower().replace("_", " ")
+    sub_occ = (profile.get("sub_occupation") or "").lower()
+    caste   = (profile.get("caste_category") or "").lower()
+    gender  = (profile.get("gender") or "").lower()
+    marital = (profile.get("marital_status") or "").lower()
+    religion = (profile.get("religion") or "").lower()
+    is_disabled = bool(profile.get("has_disability"))
+    is_student  = bool(profile.get("is_student")) or profile.get("occupation") == "student"
+    is_widow    = bool(profile.get("is_widow")) or marital == "widowed"
+    has_girl    = bool(profile.get("has_girl_child"))
+    is_minority = bool(profile.get("is_minority"))
 
-    if not user_text.strip():
-        return 0.3  # neutral default
+    # Build rich profile token list from all relevant fields
+    profile_tokens = list(filter(None, goal.split() + desc.split() + occ.split() + sub_occ.split()))
+    if caste in ("sc", "st", "obc", "ews"):
+        profile_tokens.append(caste)
+    if is_disabled:
+        profile_tokens += ["disability", "disabled", "divyang", "pwd"]
+    if is_student:
+        profile_tokens += ["student", "scholarship", "education", "fellowship"]
+    if is_widow:
+        profile_tokens += ["widow", "vidhwa"]
+    if has_girl:
+        profile_tokens += ["girl", "daughter", "beti", "mahila"]
+    if is_minority:
+        profile_tokens += ["minority", religion]
+    if profile.get("is_senior_citizen"):
+        profile_tokens += ["senior", "pension", "old age"]
+    if "fisherman" in occ:
+        profile_tokens += ["fisher", "marine", "fishing"]
+    if "weaver" in occ:
+        profile_tokens += ["weaver", "handloom", "textile"]
+    if "artisan" in occ:
+        profile_tokens += ["artisan", "handicraft", "craft", "khadi"]
 
-    scheme_name  = (scheme.get("name") or {}).get("en", "")
-    scheme_tags  = scheme.get("tags") or []
-    scheme_cat   = scheme.get("category") or ""
-    scheme_subcat = scheme.get("sub_category") or ""
-
-    # Build scheme token set
-    scheme_tokens = set(
-        (scheme_name.lower() + " " +
-         " ".join(scheme_tags).lower() + " " +
-         scheme_cat.lower() + " " +
-         scheme_subcat.lower()).split()
-    )
-
-    # User goal word tokens (filter stop words, length < 3)
-    stop_words = {"the","for","and","are","has","was","with","this","that","have","from","not","but","can"}
-    goal_words = [w for w in re.sub(r"[^\w\s]", "", user_text).split()
-                  if len(w) >= 3 and w not in stop_words]
-
-    if not goal_words:
+    if not profile_tokens:
         return 0.3
 
-    # Overlap ratio
-    matches = sum(1 for w in goal_words if any(t in w or w in t for t in scheme_tokens))
-    overlap = matches / len(goal_words)
+    # Scheme tokens (name + tags + category + eligibility text)
+    scheme_name   = (scheme.get("name") or {}).get("en", "").lower()
+    scheme_tags   = [t.lower() for t in (scheme.get("tags") or [])]
+    scheme_cat    = (scheme.get("category") or "").lower()
+    scheme_subcat = (scheme.get("sub_category") or "").lower()
+    elig_text     = ((scheme.get("eligibility_text") or {}).get("en") or "").lower()[:300]
+    scheme_tokens = set((
+        scheme_name + " " + " ".join(scheme_tags) + " " +
+        scheme_cat + " " + scheme_subcat + " " + elig_text
+    ).split())
 
-    # Category keyword boost
-    GOAL_CATEGORY_MAP = {
-        "agriculture": ["farm","farmer","crop","kisan","seed","harvest","irrigation","soil","kharif","rabi","fertilizer"],
-        "health":      ["health","medical","hospital","doctor","medicine","surgery","illness","disease","treatment","ambulance"],
-        "housing":     ["house","home","shelter","construction","pucca","roof","dwelling","building","flat","plot"],
-        "education":   ["education","school","college","study","scholarship","tuition","fee","student","class","degree","exam"],
-        "employment":  ["job","work","employment","wage","income","salary","labour","labor","business","trade"],
-        "women_welfare": ["daughter","girl","women","wife","widow","mahila","mother","dowry","marriage","beti"],
-        "disability":  ["disability","handicap","divyang","wheelchair","blind","deaf"],
-        "social_security": ["pension","old age","senior","widow","destitute","poor"],
-        "insurance":   ["insurance","accident","death","life","crop loss","hospital"],
+    stop = {"the", "for", "and", "are", "has", "was", "with", "this", "that", "have", "from", "not", "can"}
+    profile_tokens = [w for w in profile_tokens if len(w) >= 3 and w not in stop]
+    if not profile_tokens:
+        return 0.3
+
+    matches = sum(1 for w in profile_tokens if any(t in w or w in t for t in scheme_tokens))
+    overlap = matches / len(profile_tokens)
+
+    # Direct goal -> category match (strongest signal)
+    GOAL_CAT = {
+        "farming":            ["agriculture", "farmer", "kisan", "crop", "seed", "irrigation", "fertilizer", "horticulture"],
+        "housing":            ["housing", "house", "awas", "shelter", "pucca", "construction", "habitat"],
+        "health":             ["health", "medical", "hospital", "ayushman", "arogya", "sanitation", "nutrition", "medicine"],
+        "education":           ["education", "scholarship", "school", "college", "student", "fellowship", "training", "post-matric"],
+        "employment":          ["employment", "job", "wage", "rozgar", "livelihood", "nrega", "labour", "labor"],
+        "insurance":           ["insurance", "bima", "coverage", "premium", "accident", "life"],
+        "pension":             ["pension", "old age", "senior", "retirement", "apy", "nps"],
+        "business":            ["business", "enterprise", "mudra", "msme", "startup", "self-employ", "trade", "entrepreneur"],
+        "daughter":            ["girl", "daughter", "beti", "mahila", "women", "sukanya", "marriage"],
+        "loan":                ["loan", "credit", "mudra", "kcc", "concessional", "interest", "finance"],
+        "savings":             ["savings", "deposit", "nsc", "post office"],
+        "disability_support":  ["disability", "divyang", "pwd", "handicap", "rehabilitation"],
+        "water_sanitation":    ["sanitation", "toilet", "water", "swachh", "latrine"],
+        "skill_training":      ["skill", "training", "vocational", "pmkvy", "iti", "craft", "apprentice"],
     }
-    cat_keywords = GOAL_CATEGORY_MAP.get(scheme_cat, [])
-    direct_hit = 0.25 if any(w in goal_words for w in cat_keywords) else 0
+    cat_kws = GOAL_CAT.get(goal, [])
+    scheme_text = " ".join(scheme_tokens)
+    direct_hit = 0.35 if any(kw in scheme_text for kw in cat_kws) else 0
 
-    return min(1.0, overlap + direct_hit)
+    # Targeted identity boosts
+    boost = 0.0
+    if caste in ("sc", "st") and any(w in scheme_tokens for w in [caste, "scheduled", "dalit", "tribal"]):
+        boost += 0.15
+    if caste == "obc" and any(w in scheme_tokens for w in ["obc", "backward"]):
+        boost += 0.10
+    if is_disabled and any(w in scheme_tokens for w in ["disab", "divyang", "pwd", "rehabilitation"]):
+        boost += 0.20
+    if gender == "female" and any(w in scheme_tokens for w in ["women", "mahila", "female", "girl", "stree"]):
+        boost += 0.10
+    if is_widow and any(w in scheme_tokens for w in ["widow", "vidhwa"]):
+        boost += 0.15
+    if occ in ("farmer", "marginal farmer") and any(w in scheme_tokens for w in ["farmer", "kisan", "agriculture"]):
+        boost += 0.15
+    if is_student and any(w in scheme_tokens for w in ["student", "scholar", "fellowship", "matric"]):
+        boost += 0.15
+    if is_minority and any(w in scheme_tokens for w in ["minority", religion, "nmdfc"]):
+        boost += 0.15
+    if "fisherman" in occ and any(w in scheme_tokens for w in ["fisher", "fish", "marine"]):
+        boost += 0.20
+    if any(w in occ for w in ["weaver", "artisan"]) and any(w in scheme_tokens for w in ["artisan", "weaver", "handicraft", "handloom", "khadi"]):
+        boost += 0.20
+
+    return min(1.0, round(overlap + direct_hit + boost, 4))
 
 
 def f2_financial_benefit(profile: dict, scheme: dict) -> float:
@@ -1362,3 +1417,4 @@ if __name__ == "__main__":
     else:
         import uvicorn
         uvicorn.run("recommendation_engine:app", host="127.0.0.1", port=8001, reload=False)
+
